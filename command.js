@@ -1,17 +1,22 @@
+const net = require('net');
+const myfs = require('./fs.js')
+
 module.exports = {
-    USER: function ([username]) {
+    USER: function (username) {
+        console.log(username);
         this.session.username = username;
-        this.send('331 User name okay, password required for' + username);
+        this.send(`331 User name okay, password required for ${username}`);
     },
 
-    PASS: function ([password]) {
-        var socket = this;
-        var username = socket.session.username;
+    PASS: function (password) {
+        let socket = this;
+        let username = socket.session.username;
 
         for (var i = 0; i < socket.userList.length; i++) {
             if (username == socket.userList[i].username &&
                 password == socket.userList[i].password) {
                 socket.session.isLogged = true;
+                socket.session.path = socket.userList[i].path;
                 socket.send(230, 'Logged on');
                 return;
             }
@@ -19,15 +24,22 @@ module.exports = {
         socket.send(450, 'User name or password incorrect');
     },
 
-    PORT: function ([portCode]) {
-        var portCodeArr = portCode.split(',');
-        var ip = portCodeArr.slice(0, 4).join('.');
-        var port = parseInt(portCodeArr[4]) * 256 + parseInt(portCodeArr[5]);
-        socket.session.link.append({ip, port, socket: null});
-        socket.send(200, 'Port command successful');
+    PORT: function (portCode) {
+        let portCodeArr = portCode.split(',');
+        let ip = portCodeArr.slice(0, 4).join('.');
+        let port = parseInt(portCodeArr[4]) * 256 + parseInt(portCodeArr[5]);
+        this.session.dataLink.push({ip, port});
+        this.send(200, 'Port command successful');
     },
 
-
+    RETR: function(path) {
+        let comSocket = this;
+        let {ip, port} = comSocket.session.dataLink.shift();
+        let dataSocket = net.createConnection(port, ip, () => {
+            comSocket.send(150, `Opening data channel for file download from server of "${path}"`);
+        });
+        myfs.resGetCommand(comSocket.session.path + path, dataSocket);
+    },
 
 
     AUTH: function () {
@@ -59,6 +71,6 @@ module.exports = {
 
         this.send('502')
     },
-    
+
 
 };

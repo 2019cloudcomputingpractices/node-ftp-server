@@ -1,22 +1,33 @@
-var fs = require("fs");
+const fs = require("fs");
 
 
 function resGetCommand(fpath, socket) {
     let rs = fs.createReadStream(fpath);
-    rs.on("data", (data) => {
-        socket.write(data);
-    });
+    rs.pipe(socket);
 }
 
 function resPutCommand(fpath, socket) {
     let ws = ws.createReadStream(fpath);
-    socket.on("data", (data) => {
-        ws.write(data);
-    });
+    socket.pipe(ws);
 }
 
 
+function resLsCommand(socket) {
+    fs.readdir('.', (err, files) => {
+        if(err) {
+            console.log(err);
+        }
+
+        for(var i = 0; i < files.length; i++) {
+            files[i] = files[i].concat("\r\n");
+        }
+        socket.write(files);
+        socket.end();
+    });
+}
+
 module.exports = {
     resGetCommand,
-    resPutCommand
+    resPutCommand,
+    resLsCommand
 };

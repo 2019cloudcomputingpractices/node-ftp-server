@@ -1,10 +1,9 @@
-var net = require('net');
-var COMMANDS = require('./command.js');
-var REPLY_CODE = require('./reply-code.js')
-var myFs = require('./fs.js');
+const net = require('net');
+const COMMANDS = require('./command.js');
+const REPLY_CODE = require('./reply-code.js')
 
 
-var userList = [{username: 'hjj', password:'123', path:'./'}];
+let userList = [{username: 'hjj', password:'123', path:'./'}];
 
 
 
@@ -34,6 +33,7 @@ var sendHandler = function (type, message) {
 
 var ftpServer = net.createServer(function (socket) {
     socket.session = {};
+    socket.session.dataLink = [];
     socket.send = sendHandler;
     socket.userList = userList;
 
@@ -44,19 +44,19 @@ var ftpServer = net.createServer(function (socket) {
         //var buffer  = Buffer.concat(receives).toString()
         //receives = []
         var buffers = buffer.toString();
-        var lines = buffers.split('\r\n')
+        var lines = buffers.split('\r\n');
 
         for (var i = 0, l = lines.length; i < l; i++) {
             var line = lines[i];
             if (line) {
-                console.log('C:', line)
+                console.log('C:', line);
 
                 //lines.push(raw[i])
-                var cmds = line.split(' ')
-                var cmd = cmds[0].toUpperCase()
-                var arg = cmds.slice(1)
+                var cmds = line.split(' ');
+                var cmd = cmds[0].toUpperCase();
+                var arg = cmds.slice(1);
 
-                var func = COMMANDS[cmd]
+                var func = COMMANDS[cmd];
 
                 func
                     ?
@@ -88,7 +88,6 @@ var ftpServer = net.createServer(function (socket) {
 
 
 ftpServer.listen({
-    host: 'localhost',
     port: 21
 }, function () {
     console.log('opened server on', ftpServer.address());
