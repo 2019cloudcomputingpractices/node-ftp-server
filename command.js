@@ -1,10 +1,11 @@
 const net = require('net');
 const myfs = require('./fs.js')
 
+
 module.exports = {
     USER: function (username) {
-        console.log(username);
         this.session.username = username;
+        this.session.isLogged = false;
         this.send(`331 User name okay, password required for ${username}`);
     },
 
@@ -16,7 +17,8 @@ module.exports = {
             if (username == socket.userList[i].username &&
                 password == socket.userList[i].password) {
                 socket.session.isLogged = true;
-                socket.session.path = socket.userList[i].path;
+                socket.session.basePath = socket.userList[i].path;
+                socket.session.path = '/';
                 socket.send(230, 'Logged on');
                 return;
             }
@@ -25,22 +27,64 @@ module.exports = {
     },
 
     PORT: function (portCode) {
+        if (!this.session.isLogged) {
+            this.send(500, 'Please log in with USER and PASS first');
+            return;
+        }
         let portCodeArr = portCode.split(',');
         let ip = portCodeArr.slice(0, 4).join('.');
         let port = parseInt(portCodeArr[4]) * 256 + parseInt(portCodeArr[5]);
-        this.session.dataLink.push({ip, port});
+        this.session.dataLink.push({
+            ip,
+            port
+        });
         this.send(200, 'Port command successful');
     },
 
-    RETR: function(path) {
+    RETR: function (path) {
+        if (!this.session.isLogged) {
+            this.send(500, 'Please log in with USER and PASS first');
+            return;
+        }
         let comSocket = this;
-        let {ip, port} = comSocket.session.dataLink.shift();
+        path = comSocket.session.path + path;
+        let {
+            ip,
+            port
+        } = comSocket.session.dataLink.shift();
         let dataSocket = net.createConnection(port, ip, () => {
             comSocket.send(150, `Opening data channel for file download from server of "${path}"`);
         });
-        myfs.resGetCommand(comSocket.session.path + path, dataSocket);
+        myfs.resGetCommand(comSocket.session.basePath + path, dataSocket, () => {
+            comSocket.send(226, `Successfully transferred "${path}"`);
+            dataSocket.end();
+        });
     },
 
+    STOR: function (path) {
+        if (!this.session.isLogged) {
+            this.send(500, 'Please log in with USER and PASS first');
+            return;
+        }
+        let comSocket = this;
+        path = comSocket.session.path + path;
+        let {
+            ip,
+            port
+        } = comSocket.session.dataLink.shift();
+        let dataSocket = net.createConnection(port, ip, () => {
+            comSocket.send(150, `Opening data channel for file upload to server of "${path}"`);
+        });
+        myfs.resPutCommand(comSocket.session.basePath + path, dataSocket, () => {
+            comSocket.send(226, `Successfully transferred "${path}"`);
+            dataSocket.end();
+        });
+    },
+
+    QUIT: function () {
+        this.send('221 Goodbye');
+        this.end();
+    },
 
     AUTH: function () {
         this.send('502 SSL/TLS authentication not allowed.')

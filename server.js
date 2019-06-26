@@ -3,7 +3,11 @@ const COMMANDS = require('./command.js');
 const REPLY_CODE = require('./reply-code.js')
 
 
-let userList = [{username: 'hjj', password:'123', path:'./'}];
+let userList = [{
+    username: 'hjj',
+    password: '123',
+    path: './.idea'
+}];
 
 
 
@@ -66,6 +70,7 @@ var ftpServer = net.createServer(function (socket) {
         }
     };
 
+    socket.setTimeout(60000);
     socket
         .on('data', onCommand)
         .on('end', function () {
@@ -76,6 +81,8 @@ var ftpServer = net.createServer(function (socket) {
         })
         .on('timeout', function () {
             console.log('timeout', arguments);
+            socket.send(421, 'Connection timed out');
+            socket.end();
         })
         .on('error', function (err) {
             console.log('error', arguments);
