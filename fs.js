@@ -1,4 +1,5 @@
-const fs = require("fs");
+const fs = require('fs');
+const path = require('path');
 
 
 function resGetCommand(fpath, socket, callback) {
@@ -14,22 +15,26 @@ function resPutCommand(fpath, socket, callback) {
 }
 
 
-function resLsCommand(socket) {
-    fs.readdir('.', (err, files) => {
+function resNLSTCommand(dpath, socket, callback) {
+    fs.readdir(dpath, (err, files) => {
         if (err) {
             console.log(err);
+            socket.end();
+        } else {
+            socket.write(files.join('\r\n') + '\r\n');
+            callback();
         }
-
-        for (var i = 0; i < files.length; i++) {
-            files[i] = files[i].concat("\r\n");
-        }
-        socket.write(files);
-        socket.end();
     });
+}
+
+function resCWDCommand(basePath, oldPath, cdArg) {
+    let newPath = path.join(oldPath, cdArg);
+    return fs.existsSync(path.join(basePath, newPath)) ? newPath : oldPath;
 }
 
 module.exports = {
     resGetCommand,
     resPutCommand,
-    resLsCommand
+    resNLSTCommand,
+    resCWDCommand
 };

@@ -16,15 +16,15 @@ let userList = [{
 
 
 
-var sendHandler = function (type, message) {
-    var socket = this;
-    var command;
+let sendHandler = function (type, message) {
+    let socket = this;
+    let command;
 
     if (arguments.length < 2) {
         if (REPLY_CODE[type]) {
-            command = REPLY_CODE[type]
+            command = type + ' ' + REPLY_CODE[type];
         } else {
-            command = type.toString()
+            command = type.toString();
         }
     } else {
         command = type + ' ' + message;
@@ -35,7 +35,7 @@ var sendHandler = function (type, message) {
     socket.write(command + '\r\n');
 };
 
-var ftpServer = net.createServer(function (socket) {
+let ftpServer = net.createServer(function (socket) {
     socket.session = {};
     socket.session.dataLink = [];
     socket.send = sendHandler;
@@ -43,24 +43,20 @@ var ftpServer = net.createServer(function (socket) {
 
     socket.send(220, 'Welcome to FTP Server');
 
-    var onCommand = function (buffer) {
-        //receives.push(data)
-        //var buffer  = Buffer.concat(receives).toString()
-        //receives = []
-        var buffers = buffer.toString();
-        var lines = buffers.split('\r\n');
+    let onCommand = function (buffer) {
+        let buffers = buffer.toString();
+        let lines = buffers.split('\r\n');
 
-        for (var i = 0, l = lines.length; i < l; i++) {
-            var line = lines[i];
+        for (let i = 0, l = lines.length; i < l; i++) {
+            let line = lines[i];
             if (line) {
                 console.log('C:', line);
 
-                //lines.push(raw[i])
-                var cmds = line.split(' ');
-                var cmd = cmds[0].toUpperCase();
-                var arg = cmds.slice(1);
+                let cmds = line.split(' ');
+                let cmd = cmds[0].toUpperCase();
+                let arg = cmds.slice(1);
 
-                var func = COMMANDS[cmd];
+                let func = COMMANDS[cmd];
 
                 func
                     ?
@@ -70,7 +66,7 @@ var ftpServer = net.createServer(function (socket) {
         }
     };
 
-    socket.setTimeout(60000);
+    socket.setTimeout(600000);
     socket
         .on('data', onCommand)
         .on('end', function () {
