@@ -122,5 +122,15 @@ module.exports = {
     QUIT: function () {
         this.send('221 Goodbye');
         this.end();
+    },
+
+    OPTS: function (arg1, arg2) {
+        if (arg1 == 'UTF8') {
+            if (arg2 == 'ON') {
+                this.send(202, 'UTF8 mode is always enabled. No need to send this command');
+                return;
+            }
+        }
+        this.send(502);
     }
 };

@@ -1,13 +1,7 @@
 const net = require('net');
 const COMMANDS = require('./command.js');
 const REPLY_CODE = require('./reply-code.js')
-
-
-let userList = [{
-    username: 'hjj',
-    password: '123',
-    path: './.idea'
-}];
+const userList = require('./user.js')
 
 
 
@@ -58,10 +52,12 @@ let ftpServer = net.createServer(function (socket) {
 
                 let func = COMMANDS[cmd];
 
-                func
-                    ?
-                    func.apply(socket, arg) :
+                if (func) {
+                    func.apply(socket, arg);
+                } else {
                     socket.send(502)
+                    socket.session.dataLink.shift();
+                }
             }
         }
     };
