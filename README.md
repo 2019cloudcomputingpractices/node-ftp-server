@@ -8,3 +8,13 @@
     - "/"
     - "/fold1"
     - "/fold1/fold11"
+
+## 性能测试
+
+`Linux`环境下，需要提前安装[`expect`](https://linux.die.net/man/1/expect )
+
+```bash
+cd performanceTest
+./test.sh {get | put} filename concurrNum
+```
+
