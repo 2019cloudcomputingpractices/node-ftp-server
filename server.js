@@ -35,7 +35,8 @@ let ftpServer = net.createServer(function (socket) {
     socket.send = sendHandler;
     socket.userList = userList;
 
-    socket.send(220, 'Welcome to FTP Server');
+    socket.send('220-Welcome to node-ftp-server\r\n220-written by hjj & hjp\r\n' +
+        '220 Please visit https://github.com/2019cloudcomputingpractices/node-ftp-server');
 
     let onCommand = function (buffer) {
         let buffers = buffer.toString();
@@ -87,6 +88,7 @@ let ftpServer = net.createServer(function (socket) {
 
 
 ftpServer.listen({
+    host: '0.0.0.0',
     port: 21
 }, function () {
     console.log('opened server on', ftpServer.address());

@@ -101,6 +101,25 @@ module.exports = {
         });
     },
 
+    MLSD: function () {
+        if (!this.session.isLogged) {
+            this.send(530, 'Please log in with USER and PASS first');
+            return;
+        }
+        let comSocket = this;
+        let {
+            ip,
+            port
+        } = comSocket.session.dataLink.shift();
+        let dataSocket = net.createConnection(port, ip, () => {
+            comSocket.send(150, `Opening data channel for directory listing of "${comSocket.session.path}"`);
+            myfs.resMLSDCommand(path.join(comSocket.session.basePath, comSocket.session.path), dataSocket, () => {
+                comSocket.send(226, `Successfully transferred "${comSocket.session.path}"`);
+                dataSocket.end();
+            });
+        });
+    },
+
 
     XPWD: function () {
         if (!this.session.isLogged) {
@@ -109,6 +128,8 @@ module.exports = {
         }
         this.send(257, `"${this.session.path}" is current directory`);
     },
+
+    PWD: this.XPWD,
 
     CWD: function (arg) {
         if (!this.session.isLogged) {
@@ -132,5 +153,19 @@ module.exports = {
             }
         }
         this.send(502);
+    },
+
+    SYST: function () {
+        this.send(215, `${process.platform} emulated by node-ftp-server`);
+    },
+
+    TYPE: function (mode) {
+        this.send(200, `Type set to ${mode}`);
+    },
+
+    AUTH: function (arg) {
+        this.send(502, `Explicit TLS authentication not allowed`)
     }
+
+
 };
