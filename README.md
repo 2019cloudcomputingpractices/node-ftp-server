@@ -15,6 +15,7 @@
 
 ```bash
 cd performanceTest
+修改ftp_test.sh文件中的ipaddr、username、password
 ./test.sh {get | put} filename concurrNum
 ```
 
