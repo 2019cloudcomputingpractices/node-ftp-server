@@ -4,12 +4,6 @@ const REPLY_CODE = require('./reply-code.js')
 const userList = require('./user.js')
 
 
-
-
-
-
-
-
 let sendHandler = function (type, message) {
     let socket = this;
     let command;

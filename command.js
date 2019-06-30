@@ -53,7 +53,11 @@ module.exports = {
             ip,
             port
         } = comSocket.session.dataLink.shift();
-        let dataSocket = net.createConnection(port, ip, () => {
+        let dataSocket = net.createConnection({
+            port,
+            host: ip,
+            localPort: 20
+        }, () => {
             comSocket.send(150, `Opening data channel for file download from server of "${fpath}"`);
             myfs.resGetCommand(path.join(comSocket.session.basePath, fpath), dataSocket, () => {
                 comSocket.send(226, `Successfully transferred "${fpath}"`);
@@ -73,7 +77,11 @@ module.exports = {
             ip,
             port
         } = comSocket.session.dataLink.shift();
-        let dataSocket = net.createConnection(port, ip, () => {
+        let dataSocket = net.createConnection({
+            port,
+            host: ip,
+            localPort: 20
+        }, () => {
             comSocket.send(150, `Opening data channel for file upload to server of "${fpath}"`);
             myfs.resPutCommand(path.join(comSocket.session.basePath, fpath), dataSocket, () => {
                 comSocket.send(226, `Successfully transferred "${fpath}"`);
@@ -92,7 +100,11 @@ module.exports = {
             ip,
             port
         } = comSocket.session.dataLink.shift();
-        let dataSocket = net.createConnection(port, ip, () => {
+        let dataSocket = net.createConnection({
+            port,
+            host: ip,
+            localPort: 20
+        }, () => {
             comSocket.send(150, `Opening data channel for directory listing of "${comSocket.session.path}"`);
             myfs.resNLSTCommand(path.join(comSocket.session.basePath, comSocket.session.path), dataSocket, () => {
                 comSocket.send(226, `Successfully transferred "${comSocket.session.path}"`);
@@ -111,7 +123,11 @@ module.exports = {
             ip,
             port
         } = comSocket.session.dataLink.shift();
-        let dataSocket = net.createConnection(port, ip, () => {
+        let dataSocket = net.createConnection({
+            port,
+            host: ip,
+            localPort: 20
+        }, () => {
             comSocket.send(150, `Opening data channel for directory listing of "${comSocket.session.path}"`);
             myfs.resMLSDCommand(path.join(comSocket.session.basePath, comSocket.session.path), dataSocket, () => {
                 comSocket.send(226, `Successfully transferred "${comSocket.session.path}"`);
@@ -166,6 +182,4 @@ module.exports = {
     AUTH: function (arg) {
         this.send(502, `Explicit TLS authentication not allowed`)
     }
-
-
 };
